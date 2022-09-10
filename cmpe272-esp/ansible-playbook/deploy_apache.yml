@@ -1,0 +1,35 @@
+- hosts: apacheservers
+  remote_user: root
+  tasks:
+    - name: Installing Latest version of Apache
+      yum: pkg=httpd state=latest
+    - name: Copying the demo file
+      template: >-
+        src=index.html dest=/var/www/html owner=apache
+        group=apache mode=0644
+    - name: update count index from index.html file
+      lineinfile: >-
+        dest=/var/www/html/index.html
+        regexp="__count__"
+        line="{{ count }}"
+        state=present
+    - name: (Enable it on System Boot)
+      service: name=httpd enabled=yes
+      notify:
+        - start apache
+    - name: ensure httpd is running
+      service:
+        name: httpd
+        state: started
+    - name: Open port 80 for http access
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+    - name: Restart the firewalld service to load in the firewall changes
+      service:
+        name: firewalld
+        state: restarted
+  handlers:
+    - name: start apache
+      service: name=httpd state=started
