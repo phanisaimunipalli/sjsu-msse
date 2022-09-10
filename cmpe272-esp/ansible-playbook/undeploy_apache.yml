@@ -1,0 +1,8 @@
+- hosts: apacheservers
+  gather_facts: true
+  tasks:
+    - name: Uninstall Apache/HTTPD
+      tags: uninstall_apache
+      yum:
+        name: httpd
+        state: absent
